@@ -6,19 +6,33 @@ import { supabase } from "../supabase/client";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-  const location = useLocation(); // Get the current location
+  const location = useLocation();
 
-  // Check if the admin is logged in
+  // Subscribe to changes in the user's auth session
   useEffect(() => {
     const checkAdminSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAdminLoggedIn(!!session); // If a session exists, the admin is logged in
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setIsAdminLoggedIn(!!session);
     };
 
+    // Initial check
     checkAdminSession();
+
+    // Listen for changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((session) => {
+      setIsAdminLoggedIn(!!session);
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Helper function to check active link
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -72,11 +86,15 @@ const Navbar = () => {
             >
               Contact Us
             </Link>
+
+            {/* Show link if admin is logged in */}
             {isAdminLoggedIn && (
               <Link
                 to="/admin/dashboard"
                 className={`transition ${
-                  isActive("/admin/dashboard") ? "text-red-200 underline" : "hover:text-red-200"
+                  isActive("/admin/dashboard")
+                    ? "text-red-200 underline"
+                    : "hover:text-red-200"
                 }`}
               >
                 Admin Dashboard
