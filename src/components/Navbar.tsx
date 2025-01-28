@@ -5,7 +5,7 @@ import { supabase } from "../supabase/client";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false); // Default to false
   const location = useLocation();
 
   // Subscribe to changes in the user's auth session
@@ -14,17 +14,17 @@ const Navbar = () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      setIsAdminLoggedIn(!!session);
+      setIsAdminLoggedIn(!!session); // Set to true if a session exists
     };
 
     // Initial check
     checkAdminSession();
 
-    // Listen for changes
+    // Listen for changes in auth state
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((session) => {
-      setIsAdminLoggedIn(!!session);
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAdminLoggedIn(!!session); // Update state based on session presence
     });
 
     // Cleanup subscription on unmount
@@ -87,7 +87,7 @@ const Navbar = () => {
               Contact Us
             </Link>
 
-            {/* Show link if admin is logged in */}
+            {/* Admin Dashboard Link (conditional rendering) */}
             {isAdminLoggedIn && (
               <Link
                 to="/admin/dashboard"
@@ -159,6 +159,8 @@ const Navbar = () => {
               >
                 Contact Us
               </Link>
+
+              {/* Admin Dashboard Link (conditional rendering) */}
               {isAdminLoggedIn && (
                 <Link
                   to="/admin/dashboard"
